@@ -1,12 +1,12 @@
 import { GoogleAuthProvider, signInWithPopup, signOut } from 'firebase/auth';
-import { auth } from '../../firebase'
+import { auth } from '@/firebase'
 import { createUserWithEmailAndPassword, signInWithEmailAndPassword } from 'firebase/auth';
 
 const provider = new GoogleAuthProvider();
 
 export const signInWithGoogle = async () => {
     try {
-        result = await signInWithPopup(auth, provider);
+        const result = await signInWithPopup(auth, provider);
         return result.user;
     } catch(error) {
         console.error('Error signing in with Goggle', error);
@@ -16,7 +16,7 @@ export const signInWithGoogle = async () => {
 
 export const signUpWithEmail = async (email, password) => {
     try {
-        result = await createUserWithEmailAndPassword(auth, email, password)
+        const result = await createUserWithEmailAndPassword(auth, email, password)
         return result.user;
     } catch(error) {
         console.error('Error singing up with email', error)
@@ -26,7 +26,7 @@ export const signUpWithEmail = async (email, password) => {
 
 export const signInWithEmail = async (email, password) => {
     try {
-        result = await signInWithEmailAndPassword(auth, email, password)
+        const result = await signInWithEmailAndPassword(auth, email, password)
         return result.user;
     } catch(error) {
         console.error('Error singing in with email', error)

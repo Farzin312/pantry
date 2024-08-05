@@ -11,9 +11,11 @@ export default function SignIn() {
 
   const handleEmailSignIn = async () => {
     try {
-      await signInWithEmail(email, password);
-      alert('Signed in successfully');
-      router.push('/'); // Redirect to home page after successful sign-in
+      const user = await signInWithEmail(email, password);
+      if (user) {
+        alert('Signed in successfully');
+        router.push('/'); 
+      }
     } catch (error) {
       alert('Error signing in via Email: ' + error.message);
     }
@@ -21,9 +23,11 @@ export default function SignIn() {
 
   const handleGoogleSignIn = async () => {
     try {
-      await signInWithGoogle();
-      alert('Signed in Successfully');
-      router.push('/'); // Redirect to home page after successful sign-in
+      const user = await signInWithGoogle(); 
+      if (user) {
+        alert('Signed in Successfully');
+        router.push('/'); 
+      }
     } catch (error) {
       alert('Error signing in with Google: ' + error.message);
     }

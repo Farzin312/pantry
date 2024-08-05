@@ -11,9 +11,11 @@ export default function SignUp() {
 
   const handleSignUp = async () => {
     try {
-      await signUpWithEmail(email, password);
-      alert('Signed up successfully!');
-      router.push('/signin'); 
+      const user = await signUpWithEmail(email, password);
+      if (user) {
+        alert('Signed up successfully!');
+        router.push('/signin'); 
+      }
     } catch (error) {
       alert('Error signing up: ' + error.message);
     }
