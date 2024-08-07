@@ -1,26 +1,27 @@
-'use client'
+// app/components/ProtectedRoute.js
+'use client';
 import { useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { useAuthState } from 'react-firebase-hooks/auth';
 import { auth } from '@/firebase';
 
-const ProtectedRoute = ({children}) => {
-    const [user, loading] = useAuthState(auth)
-    const router = useRouter()
+const ProtectedRoute = ({ children }) => {
+  const [user, loading] = useAuthState(auth);
+  const router = useRouter();
 
-
-useEffect(() => {
+  useEffect(() => {
     if (typeof window !== 'undefined') { 
-    if (!loading && !user) {
-        router.push('/signin');
+      if (!loading && !user) {
+        router.push('/home'); 
+      }
     }
-}
-}, [user, loading, router]);
+  }, [user, loading, router]);
 
-    if (loading || !user) {
-        return <div>Loading...</div>
-    }
-    return children;
-}
+  if (loading || !user) {
+    return <div>Loading...</div>;
+  }
+
+  return children;
+};
 
 export default ProtectedRoute;
