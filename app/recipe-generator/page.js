@@ -5,11 +5,13 @@ import { useRouter } from 'next/navigation';
 import { firestore } from '@/firebase';
 import { collection, getDocs } from 'firebase/firestore';
 import NavBar from '../components/NavBar';
+import { generateRecipe } from '../utils/ai'; 
 
 export default function RecipeGenerator() {
-  const [ingredients, setIngredients] = useState('');
+  const [ingredients, setIngredients] = useState([]);
   const [recipe, setRecipe] = useState('');
   const [availableIngredients, setAvailableIngredients] = useState([]);
+  const [searchQuery, setSearchQuery] = useState('');
   const [searchResults, setSearchResults] = useState([]);
   const router = useRouter();
 
@@ -30,16 +32,8 @@ export default function RecipeGenerator() {
     fetchIngredients();
   }, []);
 
-  const handleGenerateRecipe = async (ingredients) => {
-    try {
-      const result = await generateRecipe(ingredients);
-      setRecipe(result);
-    } catch (error) {
-      console.error('Error generating recipe:', error);
-    }
-  };
-
   const handleSearch = (query) => {
+    setSearchQuery(query);
     const results = availableIngredients.filter((ingredient) =>
       ingredient.toLowerCase().includes(query.toLowerCase())
     );
@@ -47,14 +41,26 @@ export default function RecipeGenerator() {
   };
 
   const handleAddIngredient = (ingredient) => {
-    setIngredients((prev) => (prev ? `${prev}, ${ingredient}` : ingredient));
+    if (!ingredients.includes(ingredient)) {
+      setIngredients((prev) => [...prev, ingredient]);
+    }
+    setSearchQuery('');
+    setSearchResults([]);
   };
 
-  useEffect(() => {
-    if (availableIngredients.length > 0) {
-      handleGenerateRecipe(availableIngredients.join(', '));
+  const handleGenerateRecipe = async () => {
+    const ingredientString = ingredients.join(', ');
+    try {
+      const result = await generateRecipe(ingredientString);
+      setRecipe(result);
+    } catch (error) {
+      console.error('Error generating recipe:', error);
     }
-  }, [availableIngredients]);
+  };
+
+  const handleLogout = async () => {
+    router.push('/home');
+  };
 
   return (
     <Box
@@ -65,7 +71,7 @@ export default function RecipeGenerator() {
       alignItems='center'
       sx={{ gap: 4, textAlign: 'center', backgroundColor: 'transparent' }}
     >
-      <NavBar handleLogout={() => router.push('/home')} hideRecipeGenerator />
+      <NavBar handleLogout={handleLogout} hideRecipeGenerator />
       <Typography variant='h4' gutterBottom>
         Recipe Generator
       </Typography>
@@ -73,6 +79,7 @@ export default function RecipeGenerator() {
         label='Search for ingredients'
         variant='outlined'
         fullWidth
+        value={searchQuery}
         onChange={(e) => handleSearch(e.target.value)}
         sx={{ maxWidth: '600px' }}
       />
@@ -88,10 +95,17 @@ export default function RecipeGenerator() {
           </Button>
         ))}
       </Stack>
+      <Stack direction="row" spacing={1} sx={{ flexWrap: 'wrap', justifyContent: 'center', marginTop: 2 }}>
+        {ingredients.map((ingredient, index) => (
+          <Button key={index} variant="contained" sx={{ margin: 1 }}>
+            {ingredient}
+          </Button>
+        ))}
+      </Stack>
       <Button
         variant='contained'
-        onClick={() => handleGenerateRecipe(ingredients)}
-        sx={{ backgroundColor: '#33292900', color: '#674B4B' }}
+        onClick={handleGenerateRecipe}
+        sx={{ backgroundColor: '#33292900', color: '#674B4B', marginTop: 4 }}
       >
         Generate Recipe
       </Button>
@@ -106,7 +120,7 @@ export default function RecipeGenerator() {
       <Button
         variant='outlined'
         onClick={() => router.push('/')}
-        sx={{ color: '#674B4B' }}
+        sx={{ color: '#674B4B', marginTop: 2 }}
       >
         Back to Inventory
       </Button>
