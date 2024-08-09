@@ -2,7 +2,7 @@
 import { useState, useEffect } from 'react';
 import { Box, Typography, Button, TextField, Stack } from '@mui/material';
 import { useRouter } from 'next/navigation';
-import { firestore } from '@/firebase';
+import { firestore, auth } from '@/firebase';
 import { collection, getDocs } from 'firebase/firestore';
 import NavBar from './NavBar';
 import { generateRecipe } from '../utils/ai'; 
@@ -16,10 +16,14 @@ export default function RecipeGenerator() {
   const [isLoading, setIsLoading] = useState(false);
   const router = useRouter();
 
+  const user = auth.currentUser;
+
   useEffect(() => {
     const fetchIngredients = async () => {
+      if (!user) return;
+
       try {
-        const snapshot = await getDocs(collection(firestore, 'pantry'));
+        const snapshot = await getDocs(collection(firestore, 'users', user.uid, 'pantry'));
         const ingredientsList = [];
         snapshot.forEach((doc) => {
           ingredientsList.push(doc.id);
@@ -31,7 +35,7 @@ export default function RecipeGenerator() {
     };
 
     fetchIngredients();
-  }, []);
+  }, [user]);
 
   const handleSearch = (query) => {
     setSearchQuery(query);
@@ -147,7 +151,6 @@ export default function RecipeGenerator() {
 
       <Button
         variant='outlined'
-        
         onClick={() => router.push('/')}
         sx={{ color: '#674B4B', marginTop: 1 }}
       >
@@ -156,4 +159,3 @@ export default function RecipeGenerator() {
     </Box>
   );
 }
-

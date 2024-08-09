@@ -33,8 +33,12 @@ export default function Inventory() {
   const [currentEditItem, setCurrentEditItem] = useState(null);
   const router = useRouter();
 
+  const user = auth.currentUser;
+
   const updatePantry = async () => {
-    const snapshot = query(collection(firestore, 'pantry'));
+    if (!user) return;
+    const userPantryCollection = collection(firestore, 'users', user.uid, 'pantry');
+    const snapshot = query(userPantryCollection);
     const docs = await getDocs(snapshot);
     const pantryList = [];
     docs.forEach((doc) => {
@@ -45,10 +49,12 @@ export default function Inventory() {
 
   useEffect(() => {
     updatePantry();
-  }, []);
+  }, [user]);
 
   const addItem = async (item, quantity, unit) => {
-    const docRef = doc(collection(firestore, 'pantry'), item);
+    if (!user) return;
+    const userPantryCollection = collection(firestore, 'users', user.uid, 'pantry');
+    const docRef = doc(userPantryCollection, item);
     const docSnap = await getDoc(docRef);
     if (docSnap.exists()) {
       const currentCount = docSnap.data().count || 1;
@@ -60,13 +66,17 @@ export default function Inventory() {
   };
 
   const editItem = async (name, quantity, unit) => {
-    const docRef = doc(collection(firestore, 'pantry'), name);
+    if (!user) return;
+    const userPantryCollection = collection(firestore, 'users', user.uid, 'pantry');
+    const docRef = doc(userPantryCollection, name);
     await setDoc(docRef, { count: quantity, unit });
     await updatePantry();
   };
 
   const removeItem = async (item) => {
-    const docRef = doc(collection(firestore, 'pantry'), item);
+    if (!user) return;
+    const userPantryCollection = collection(firestore, 'users', user.uid, 'pantry');
+    const docRef = doc(userPantryCollection, item);
     await deleteDoc(docRef);
     await updatePantry();
   };
