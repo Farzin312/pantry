@@ -1,8 +1,25 @@
 'use client';
+import { useEffect } from 'react';
+import { useRouter } from 'next/navigation';
+import { useAuthState } from 'react-firebase-hooks/auth';
+import { auth } from '@/firebase';
 import Link from 'next/link';
 import { Box, Typography, Button } from '@mui/material';
 
+
 export default function Home() {
+  const [user, loading] = useAuthState(auth);
+  const router = useRouter();
+
+  useEffect(() => {
+    if (!loading && user) {
+      router.push('/inventory');  
+    }
+  }, [user, loading, router]);
+
+  if (loading) {
+    return <div>Loading...</div>;  
+  }
   return (
     <Box
       width='100%'
