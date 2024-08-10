@@ -16,7 +16,7 @@ export const generateRecipe = async (ingredients) => {
         messages: [
           {
             role: 'user',
-            content: `Please create a recipe with the following ingredients: ${ingredientsArray.join(', ')}`
+            content: `Please create a recipe with the following ingredients, and list the estimated calorie and nutrition facts: ${ingredientsArray.join(', ')}`
           }
         ],
         temperature: 1,  

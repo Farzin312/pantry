@@ -28,7 +28,7 @@ export default function Inventory() {
   const handleEditOpen = () => setEditOpen(true);
   const handleEditClose = () => setEditOpen(false);
   const [itemName, setItemName] = useState('');
-  const [itemQuantity, setItemQuantity] = useState(1);
+  const [itemQuantity, setItemQuantity] = useState('');
   const [itemUnit, setItemUnit] = useState('');
   const [currentEditItem, setCurrentEditItem] = useState(null);
   const router = useRouter();
@@ -52,18 +52,20 @@ export default function Inventory() {
   }, [user]);
 
   const addItem = async (item, quantity, unit) => {
-    if (!user) return;
+    if (!user || !item) {
+        throw new Error('Item cannot be empty');
+    }
     const userPantryCollection = collection(firestore, 'users', user.uid, 'pantry');
     const docRef = doc(userPantryCollection, item);
     const docSnap = await getDoc(docRef);
     if (docSnap.exists()) {
-      const currentCount = docSnap.data().count || 1;
-      await setDoc(docRef, { count: currentCount + quantity, unit });
+        const currentCount = docSnap.data().count || 1;
+        await setDoc(docRef, { count: currentCount + quantity, unit });
     } else {
-      await setDoc(docRef, { count: quantity, unit });
+        await setDoc(docRef, { count: quantity, unit });
     }
     await updatePantry();
-  };
+};
 
   const editItem = async (name, quantity, unit) => {
     if (!user) return;
@@ -92,6 +94,19 @@ export default function Inventory() {
     setItemQuantity(item.count);
     setItemUnit(item.unit || '');
     handleEditOpen();
+  };
+
+  const handleSubmit = async (event) => {
+    event.preventDefault();
+    if (!itemName || !itemQuantity || itemQuantity === 0) {
+      alert('Item name and quantity cannot be empty or zero');
+      return;
+    }
+    await addItem(itemName, itemQuantity, itemUnit);
+    setItemName('');
+    setItemQuantity('');
+    setItemUnit('');
+    handleClose();
   };
 
   return (
@@ -139,14 +154,23 @@ export default function Inventory() {
                 value={itemName}
                 onChange={(e) => setItemName(e.target.value)}
               />
-              <TextField
-                id='outlined-basic'
+             <TextField
+                id='add-quantity'
                 label='Quantity'
                 variant='outlined'
                 fullWidth
                 value={itemQuantity}
-                onChange={(e) => setItemQuantity(parseInt(e.target.value) || 1)}
-                InputProps={{ inputProps: { min: 1 } }}
+                onChange={(e) => {
+                  const value = e.target.value;
+                  if (value === '') {
+                    setItemQuantity('');
+                  } else {
+                    const num = parseFloat(value);
+                    if (!isNaN(num)) {
+                      setItemQuantity(num);
+                    }
+                  }
+                }}
               />
               <TextField
                 id='outlined-basic'
@@ -159,20 +183,14 @@ export default function Inventory() {
               />
               <Button
                 variant="contained"
-                onClick={() => {
-                  addItem(itemName, itemQuantity, itemUnit);
-                  setItemName('');
-                  setItemQuantity(1);
-                  setItemUnit('');
-                  handleClose();
-                }}
+                onClick={handleSubmit}
                 sx={{
                   backgroundColor: '#33292900',
                   color: '#674B4B'
                 }}
               >
                 Add
-              </Button>
+              </Button>   
             </Stack>
           </Box>
         </Modal>
@@ -201,8 +219,17 @@ export default function Inventory() {
                 variant='outlined'
                 fullWidth
                 value={itemQuantity}
-                onChange={(e) => setItemQuantity(parseInt(e.target.value) || 1)}
-                InputProps={{ inputProps: { min: 1 } }}
+                onChange={(e) => {
+                  const value = e.target.value;
+                  if (value === '') {
+                    setItemQuantity('');
+                  } else {
+                    const num = parseFloat(value);
+                    if (!isNaN(num)) {
+                      setItemQuantity(num);
+                    }
+                  }
+                }}
               />
               <TextField
                 id='edit-unit'
